@@ -1,4 +1,4 @@
-module gee_web_framework
+module gee_v3_framework
 
 go 1.16
 
