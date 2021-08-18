@@ -1,6 +1,7 @@
 package gee
 
 import (
+	"net/http"
 	"strings"
 )
 
@@ -36,7 +37,8 @@ func parsePattern(pattern string) []string {
 func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	parts := parsePattern(pattern)
 	key := method + "-" + pattern
-	if _, ok := r.roots[method]; !ok {
+	_, ok := r.roots[method]
+	if !ok {
 		r.roots[method] = &node{}
 	}
 	r.roots[method].insert(pattern, parts, 0)
@@ -67,4 +69,15 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 		return n, params
 	}
 	return nil, nil
+}
+
+func (r *router) handle(c *Context) {
+	n, params := r.getRoute(c.Method, c.Path)
+	if n != nil {
+		c.Params = params
+		key := c.Method + "-" + n.pattern
+		r.handlers[key](c)
+	} else {
+		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+	}
 }
