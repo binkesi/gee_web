@@ -18,9 +18,16 @@ func onlyForV2() gee.HandlerFunc {
 func main() {
 	r := gee.New()
 	r.Use(gee.Logger())
-	r.GET("/", func(c *gee.Context) {
-		c.HTML(http.StatusOK, "<h1>Hello gee</h1>")
+	r.GET("/index", func(c *gee.Context) {
+		c.HTML(http.StatusOK, "<h1>Index page.</h1>")
 	})
+
+	v1 := r.Group("/v1")
+	{
+		v1.GET("/classes", func(c *gee.Context) {
+			c.String(http.StatusOK, "Let's learn classes.")
+		})
+	}
 
 	v2 := r.Group("/v2")
 	v2.Use(onlyForV2())
