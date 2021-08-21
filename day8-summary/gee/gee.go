@@ -9,7 +9,7 @@ type Engine struct {
 	router map[string]HandlerFunc
 }
 
-type HandlerFunc func(http.ResponseWriter, *http.Request)
+type HandlerFunc func(*Context)
 
 func New() *Engine {
 	engine := &Engine{router: make(map[string]HandlerFunc)}
