@@ -6,14 +6,14 @@ import (
 )
 
 type router struct {
-	roots   map[string]*node
-	handler map[string]HandlerFunc
+	roots    map[string]*node
+	handlers map[string]HandlerFunc
 }
 
 func newRouter() *router {
 	return &router{
-		roots:   make(map[string]*node),
-		handler: make(map[string]HandlerFunc),
+		roots:    make(map[string]*node),
+		handlers: make(map[string]HandlerFunc),
 	}
 }
 
@@ -39,12 +39,12 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 		r.roots[method] = &node{}
 	}
 	r.roots[method].insert(pattern, parts, 0)
-	r.handler[key] = handler
+	r.handlers[key] = handler
 }
 
 func (r *router) getRoute(method string, path string) (*node, map[string]string) {
 	searchParts := parsePattern(path)
-	parms := make(map[string]string)
+	params := make(map[string]string)
 	root, ok := r.roots[method]
 	if !ok {
 		return nil, nil
@@ -54,14 +54,14 @@ func (r *router) getRoute(method string, path string) (*node, map[string]string)
 		parts := parsePattern(n.pattern)
 		for index, part := range parts {
 			if part[0] == ':' {
-				parms[part[1:]] = searchParts[index]
+				params[part[1:]] = searchParts[index]
 			}
 			if part[0] == '*' && len(part) > 1 {
-				parms[part[1:]] = strings.Join(searchParts[index:], "/")
+				params[part[1:]] = strings.Join(searchParts[index:], "/")
 				break
 			}
 		}
-		return n, parms
+		return n, params
 	}
 	return nil, nil
 }
@@ -70,8 +70,8 @@ func (r *router) handle(c *Context) {
 	n, params := r.getRoute(c.Method, c.Path)
 	if n != nil {
 		c.Params = params
-		key := c.Method + "-" + c.Path
-		r.handler[key](c)
+		key := c.Method + "-" + n.pattern
+		r.handlers[key](c)
 	} else {
 		c.String(http.StatusNotFound, "404 NOT FOUND: %s", c.Path)
 	}
