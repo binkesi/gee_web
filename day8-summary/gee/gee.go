@@ -7,12 +7,23 @@ import (
 
 type Engine struct {
 	router *router
+	*RouterGroup
+	groups []*RouterGroup
+}
+
+type RouterGroup struct {
+	prefix      string
+	middlewares []HandlerFunc
+	engine      *Engine
+	parent      *RouterGroup
 }
 
 type HandlerFunc func(*Context)
 
 func New() *Engine {
 	engine := &Engine{router: newRouter()}
+	engine.RouterGroup = &RouterGroup{engine: engine}
+	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
 }
 
